@@ -7,7 +7,15 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigFile {
-    public static Object config(String key, String filename = "app.conf") {
+    public static Object config(String key) {
+        return _config(key, "app.conf");
+    }
+
+    public static Object config(String key, String filename) {
+        return _config(key, filename);
+    }
+
+    private static Object _config(String key, String filename) {
         Properties prop = new Properties();
         String filePath = String.format("resources/%s", filename);
         InputStream is = null;
