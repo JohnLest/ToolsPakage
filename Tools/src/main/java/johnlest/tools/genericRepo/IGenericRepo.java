@@ -28,6 +28,23 @@ public interface IGenericRepo {
     public List<List<Object>> GetAllWhere(String where) throws SQLException;
     
     /**
+     * Get some column 
+     * @param elem Columns list
+     * @return Objects table
+     * @throws SQLException
+     */
+    public List<List<Object>> GetColumn(List<String> elem) throws SQLException;
+   
+    /**
+     * Get some columns with condition
+     * @param elem Columns list
+     * @param where condition 
+     * @return Objects tables
+     * @throws SQLException
+     */
+    public List<List<Object>> GetColumn(List<String> elem, String where) throws SQLException;
+    
+    /**
      * Get the first row with condition
      * @param where Condition
      * @return Objexts List

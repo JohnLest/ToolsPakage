@@ -6,4 +6,7 @@ public class Tools {
             return true;
         return false;
     }
+    public static String RemoveLastChar(String str, int toRemove) {
+        return str.substring(0, str.length()-toRemove);
+    }
 }

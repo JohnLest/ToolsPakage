@@ -35,12 +35,23 @@ public class GenericRepo implements IGenericRepo {
         String query = String.format("SELECT * FROM %s WHERE %s ;", table, where);
         return ResultTable(ExecuteQuery(query));
     }
+    public List<List<Object>> GetColumn(List<String> elem) throws SQLException{
+        String columnList = ColumnList2String(elem);
+        String query = String.format("SELECT %s FROM %s ;", columnList, table);
+        return ResultTable(ExecuteQuery(query));
+    }
+    public List<List<Object>> GetColumn(List<String> elem, String where) throws SQLException{
+        String columnList = ColumnList2String(elem);
+        String query = String.format("SELECT %s FROM %s WHERE %s ;", columnList, table, where);
+        return ResultTable(ExecuteQuery(query));
+    }
     public List<Object> GetFirst(String where) throws SQLException{
         String query = String.format("SELECT * FROM %s WHERE %s LIMIT 1 ;", table, where);
         return ResultRow(ExecuteQuery(query));
     }
     public List<Object> GetFirst(List<String> elem, String where) throws SQLException{
-        String query = String.format("SELECT * FROM %s WHERE %s LIMIT 1 ;", table, where);
+        String columnList = ColumnList2String(elem);
+        String query = String.format("SELECT %s FROM %s WHERE %s LIMIT 1 ;",columnList, table, where);
         return ResultRow(ExecuteQuery(query));
     }
     public int Count() throws SQLException{
@@ -53,6 +64,8 @@ public class GenericRepo implements IGenericRepo {
         Object res = ResultRow(ExecuteQuery(query)).stream().findFirst();
         return (Tools.isNullOrEmpty(res)? 0 : (Integer)res);
     }
+
+
     //#endregion
 
     //#region private Methode
@@ -66,6 +79,18 @@ public class GenericRepo implements IGenericRepo {
         ResultSet result = ExecuteQuery(query);
         result.next();
         return result.getString("Column_name");
+    }
+    /**
+     * Convert the column list tu string for the querry
+     * @param list
+     * @return
+     */
+    private String ColumnList2String(List<String> list){
+        String str = "";
+        for (String string : list) {
+            str = String.format("%s %s,", str, string);
+        }
+        return Tools.RemoveLastChar(str, 1);
     }
     /**
      * Execute the query
