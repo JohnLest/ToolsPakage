@@ -10,14 +10,14 @@ public interface IGenericRepo {
      * @return objects list
      * @throws SQLException
      */
-    public List<Object> GetByID(int id) throws SQLException;
+    public Object GetByID(int id) throws SQLException;
     
     /**
      * Get all table
      * @return Objects table
      * @throws SQLException
      */
-    public List<List<Object>> GetAll() throws SQLException;
+    public List<Object> GetAll() throws SQLException;
    
     /**
      * Get all table with condition
@@ -25,7 +25,7 @@ public interface IGenericRepo {
      * @return Objects table
      * @throws SQLException
      */
-    public List<List<Object>> GetAllWhere(String where) throws SQLException;
+    public List<Object> GetAllWhere(String where) throws SQLException;
     
     /**
      * Get some column 
@@ -33,7 +33,7 @@ public interface IGenericRepo {
      * @return Objects table
      * @throws SQLException
      */
-    public List<List<Object>> GetColumn(List<String> elem) throws SQLException;
+    public List<Object> GetColumn(List<String> elem) throws SQLException;
    
     /**
      * Get some columns with condition
@@ -42,7 +42,7 @@ public interface IGenericRepo {
      * @return Objects tables
      * @throws SQLException
      */
-    public List<List<Object>> GetColumn(List<String> elem, String where) throws SQLException;
+    public List<Object> GetColumn(List<String> elem, String where) throws SQLException;
     
     /**
      * Get the first row with condition
@@ -50,7 +50,7 @@ public interface IGenericRepo {
      * @return Objexts List
      * @throws SQLException
      */
-    public List<Object> GetFirst(String where) throws SQLException;
+    public Object GetFirst(String where) throws SQLException;
     
     /**
      * Get some elements in the first row with condition
@@ -59,7 +59,7 @@ public interface IGenericRepo {
      * @return Object List
      * @throws SQLException
      */
-    public List<Object> GetFirst(List<String> elem, String where) throws SQLException;
+    public Object GetFirst(List<String> elem, String where) throws SQLException;
     
     /**
      * Count number of row in table

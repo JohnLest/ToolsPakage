@@ -2,6 +2,12 @@ package johnlest.tools.genericRepo;
 
 import java.sql.*;
 import java.util.*;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ArrayHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+
 import johnlest.tools.*;
 
 /**
@@ -11,57 +17,62 @@ public class GenericRepo implements IGenericRepo {
 
     protected String table;
     protected Connection connection;
+    protected Class bean;
+    private QueryRunner qRunner;
 
     /**
      * Constructor
      * @param table
      * @param connection
      */
-    public GenericRepo(String table, Connection connection) {
+    public GenericRepo(String table, Class bean, Connection connection) {
         this.table = table;
         this.connection = connection;
+        this.bean = bean;
+        this.qRunner = new QueryRunner();
+
     }
 
     //#region Public Methode
-    public List<Object> GetByID(int id) throws SQLException {
+    public Object GetByID(int id) throws SQLException {
         String query = String.format("SELECT * FROM %s WHERE %s = %d ;", table, GetPrimaryKey(), id);
-        return ResultRow(ExecuteQuery(query));
+        return ResultRowBean(query);
     }
-    public List<List<Object>> GetAll() throws SQLException {
+    public List<Object> GetAll() throws SQLException {
         String query = String.format("SELECT * FROM %s ;", table);
-        return ResultTable(ExecuteQuery(query));
+        return ResultTable(query);
     }
-    public List<List<Object>> GetAllWhere(String where) throws SQLException{
+    public List<Object> GetAllWhere(String where) throws SQLException{
         String query = String.format("SELECT * FROM %s WHERE %s ;", table, where);
-        return ResultTable(ExecuteQuery(query));
+        return ResultTable(query);
     }
-    public List<List<Object>> GetColumn(List<String> elem) throws SQLException{
+    public List<Object> GetColumn(List<String> elem) throws SQLException{
         String columnList = ColumnList2String(elem);
         String query = String.format("SELECT %s FROM %s ;", columnList, table);
-        return ResultTable(ExecuteQuery(query));
+        return ResultTable(query);
     }
-    public List<List<Object>> GetColumn(List<String> elem, String where) throws SQLException{
+    public List<Object> GetColumn(List<String> elem, String where) throws SQLException{
         String columnList = ColumnList2String(elem);
         String query = String.format("SELECT %s FROM %s WHERE %s ;", columnList, table, where);
-        return ResultTable(ExecuteQuery(query));
+        return ResultTable(query);
     }
-    public List<Object> GetFirst(String where) throws SQLException{
+    public Object GetFirst(String where) throws SQLException{
         String query = String.format("SELECT * FROM %s WHERE %s LIMIT 1 ;", table, where);
-        return ResultRow(ExecuteQuery(query));
+        return ResultRowBean(query);
     }
-    public List<Object> GetFirst(List<String> elem, String where) throws SQLException{
+    public Object GetFirst(List<String> elem, String where) throws SQLException{
         String columnList = ColumnList2String(elem);
         String query = String.format("SELECT %s FROM %s WHERE %s LIMIT 1 ;",columnList, table, where);
-        return ResultRow(ExecuteQuery(query));
+        return ResultRowBean(query);
     }
     public int Count() throws SQLException{
         String query = String.format("SELECT COUNT (*) FROM %s ;", table);
-        Object res = ResultRow(ExecuteQuery(query)).stream().findFirst();
+        Object res = Arrays.asList(ResultRowObject(query)).stream().findFirst();
         return (Tools.isNullOrEmpty(res)? 0 : (Integer)res);
     }
     public int Count(String where) throws SQLException{
         String query = String.format("SELECT COUNT (*) FROM %s WHERE %s ;", table, where);
-        Object res = ResultRow(ExecuteQuery(query)).stream().findFirst();
+        Object res = Arrays.asList(ResultRowObject(query)).stream().findFirst();
         return (Tools.isNullOrEmpty(res)? 0 : (Integer)res);
     }
 
@@ -104,16 +115,32 @@ public class GenericRepo implements IGenericRepo {
     }
     /**
      * Return the result to a table
-     * @param result
-     * @return Objects Table
+     * @param query
+     * @return List<bean>
      * @throws SQLException
      */
-    private List<List<Object>> ResultTable(ResultSet result) throws SQLException {
-        List<List<Object>> resultList = new ArrayList<List<Object>>();
-        while (result.next()) {
-            resultList.add(GetRow(result));
-        }
-        return resultList;
+    private List<Object> ResultTable(String query) throws SQLException {
+        List table = new ArrayList();
+        table = (List) qRunner.query(
+            connection,
+            query, 
+            new BeanListHandler(bean)
+            );
+        return table;
+    }
+    /**
+     * Return the result to a list
+     * @param query
+     * @return bean
+     * @throws SQLException
+     */
+    private Object ResultRowBean(String query) throws SQLException{
+        Object row = qRunner.query(
+            connection,
+            query, 
+            new BeanHandler(bean)
+            );
+        return row;
     }
     /**
      * Return the result to a list
@@ -121,22 +148,14 @@ public class GenericRepo implements IGenericRepo {
      * @return Objects List
      * @throws SQLException
      */
-    private List<Object> ResultRow(ResultSet result) throws SQLException{
-        return (result.next()? GetRow(result) : null);
-    }
-    /**
-     * Get the rows of the result
-     * @param result
-     * @return Row (Objects List)
-     * @throws SQLException
-     */
-    private List<Object> GetRow(ResultSet result) throws SQLException {
-        List<Object> row = new ArrayList<Object>();
-        ResultSetMetaData resultMD = result.getMetaData();
-        for (int i = 1; i <= resultMD.getColumnCount(); i++) {
-            row.add(result.getObject(resultMD.getColumnName(i)));
-        }
+    private Object ResultRowObject(String query) throws SQLException{
+        Object row = qRunner.query(
+            connection,
+            query, 
+            new ArrayHandler()
+            );
         return row;
     }
+
     //#endregion
 }
