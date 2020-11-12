@@ -7,14 +7,14 @@ public interface IGenericRepo {
     /**
      * Get Row by ID 
      * @param id primary Key value
-     * @return objects list
+     * @return Row
      * @throws SQLException
      */
     public Object GetByID(int id) throws SQLException;
     
     /**
      * Get all table
-     * @return Objects table
+     * @return Table
      * @throws SQLException
      */
     public List<Object> GetAll() throws SQLException;
@@ -22,7 +22,7 @@ public interface IGenericRepo {
     /**
      * Get all table with condition
      * @param where Condition 
-     * @return Objects table
+     * @return Table
      * @throws SQLException
      */
     public List<Object> GetAllWhere(String where) throws SQLException;
@@ -30,7 +30,7 @@ public interface IGenericRepo {
     /**
      * Get some column 
      * @param elem Columns list
-     * @return Objects table
+     * @return Table
      * @throws SQLException
      */
     public List<Object> GetColumn(List<String> elem) throws SQLException;
@@ -38,8 +38,8 @@ public interface IGenericRepo {
     /**
      * Get some columns with condition
      * @param elem Columns list
-     * @param where condition 
-     * @return Objects tables
+     * @param where Condition 
+     * @return Tables
      * @throws SQLException
      */
     public List<Object> GetColumn(List<String> elem, String where) throws SQLException;
@@ -47,7 +47,7 @@ public interface IGenericRepo {
     /**
      * Get the first row with condition
      * @param where Condition
-     * @return Objexts List
+     * @return Row
      * @throws SQLException
      */
     public Object GetFirst(String where) throws SQLException;
@@ -56,7 +56,7 @@ public interface IGenericRepo {
      * Get some elements in the first row with condition
      * @param elem Column list tu search
      * @param where Condition
-     * @return Object List
+     * @return Row
      * @throws SQLException
      */
     public Object GetFirst(List<String> elem, String where) throws SQLException;
@@ -75,5 +75,13 @@ public interface IGenericRepo {
      * @throws SQLException
      */
     public int Count(String where) throws SQLException;
+
+    /**
+     * Use a stored procedure
+     * @param storeProc Stored procedure name
+     * @return result of stored procédure (Row)
+     * @throws SQLException
+     */
+    public Object UseStorProc(String storeProc) throws SQLException;
 }
 
