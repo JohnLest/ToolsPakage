@@ -82,6 +82,21 @@ public interface IGenericRepo {
      * @return result of stored procédure (Row)
      * @throws SQLException
      */
-    public Object UseStorProc(String storeProc) throws SQLException;
+    public Object UseStorProc() throws SQLException;
+
+    /**
+     * Update all table
+     * @param update
+     * @throws SQLException
+     */
+    public int Update(Object update) throws SQLException;
+
+    /**
+     * Update the table with condition
+     * @param update
+     * @param where
+     * @throws SQLException
+     */
+    public int Update(Object update, String where) throws SQLException;
 }
 

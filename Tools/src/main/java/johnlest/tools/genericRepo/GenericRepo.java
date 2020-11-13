@@ -22,14 +22,18 @@ public class GenericRepo implements IGenericRepo {
 
     /**
      * Constructor
+     * 
      * @param connection
      */
-    public GenericRepo(Connection connection) {
+    public GenericRepo(String table, Connection connection) {
+        this.table = table;
         this.connection = connection;
         this.qRunner = new QueryRunner();
     }
+
     /**
      * Constructor
+     * 
      * @param table
      * @param bean
      * @param connection
@@ -41,53 +45,73 @@ public class GenericRepo implements IGenericRepo {
         this.qRunner = new QueryRunner();
     }
 
-    //#region Public Methode
+    // #region Public Methode
     public Object GetByID(int id) throws SQLException {
         String query = String.format("SELECT * FROM %s WHERE %s = %d ;", table, GetPrimaryKey(), id);
         return ResultRowBean(query);
     }
+
     public List<Object> GetAll() throws SQLException {
         String query = String.format("SELECT * FROM %s ;", table);
         return ResultTable(query);
     }
-    public List<Object> GetAllWhere(String where) throws SQLException{
+
+    public List<Object> GetAllWhere(String where) throws SQLException {
         String query = String.format("SELECT * FROM %s WHERE %s ;", table, where);
         return ResultTable(query);
     }
-    public List<Object> GetColumn(List<String> elem) throws SQLException{
+
+    public List<Object> GetColumn(List<String> elem) throws SQLException {
         String columnList = ColumnList2String(elem);
         String query = String.format("SELECT %s FROM %s ;", columnList, table);
         return ResultTable(query);
     }
-    public List<Object> GetColumn(List<String> elem, String where) throws SQLException{
+
+    public List<Object> GetColumn(List<String> elem, String where) throws SQLException {
         String columnList = ColumnList2String(elem);
         String query = String.format("SELECT %s FROM %s WHERE %s ;", columnList, table, where);
         return ResultTable(query);
     }
-    public Object GetFirst(String where) throws SQLException{
+
+    public Object GetFirst(String where) throws SQLException {
         String query = String.format("SELECT * FROM %s WHERE %s LIMIT 1 ;", table, where);
         return ResultRowBean(query);
     }
-    public Object GetFirst(List<String> elem, String where) throws SQLException{
+
+    public Object GetFirst(List<String> elem, String where) throws SQLException {
         String columnList = ColumnList2String(elem);
-        String query = String.format("SELECT %s FROM %s WHERE %s LIMIT 1 ;",columnList, table, where);
+        String query = String.format("SELECT %s FROM %s WHERE %s LIMIT 1 ;", columnList, table, where);
         return ResultRowBean(query);
     }
-    public int Count() throws SQLException{
+
+    public int Count() throws SQLException {
         String query = String.format("SELECT COUNT (*) FROM %s ;", table);
         Object res = Arrays.asList(ResultRowObject(query)).stream().findFirst();
-        return (Tools.isNullOrEmpty(res)? 0 : (Integer)res);
+        return (Tools.isNullOrEmpty(res) ? 0 : (Integer) res);
     }
-    public int Count(String where) throws SQLException{
+
+    public int Count(String where) throws SQLException {
         String query = String.format("SELECT COUNT (*) FROM %s WHERE %s ;", table, where);
         Object res = Arrays.asList(ResultRowObject(query)).stream().findFirst();
-        return (Tools.isNullOrEmpty(res)? 0 : (Integer)res);
+        return (Tools.isNullOrEmpty(res) ? 0 : (Integer) res);
     }
-    public Object UseStorProc(String storProc) throws SQLException {
-        String query = String.format("CALL %s ;", storProc);
+
+    public Object UseStorProc() throws SQLException {
+        String query = String.format("CALL %s ;", table);
         return ResultRowObject(query);
     }
 
+    public int Update(Object update) throws SQLException {
+        String setStr = Bean2string(update, true);
+        String query = String.format("UPDATE %s SET %s ;", table, setStr);
+        return ResultUpdateInsert(query);
+    }
+
+    public int Update(Object update, String where) throws SQLException {
+        String setStr = Bean2string(update, true);
+        String query = String.format("UPDATE %s SET %s WHERE %s ;", table, setStr, where);
+        return ResultUpdateInsert(query);
+    }
 
     //#endregion
 
@@ -116,6 +140,51 @@ public class GenericRepo implements IGenericRepo {
         return Tools.RemoveLastChar(str, 1);
     }
     /**
+     * Convert the Object bean in string for thr INSERT or UPDATE 
+     * @param obj the Object is a bean
+     * @param isUpdate Bool, the request is a update (true) or insert (false)? 
+     * @return String for SQL Request
+     */
+    private String Bean2string(Object obj, Boolean isUpdate) {
+        try {
+            Properties prop = BaseBean.toProperties(obj);
+            HashMap<String, String> hMap = new HashMap<String, String>((Map) prop);
+            hMap.remove("class");
+            Set<Map.Entry<String, String>>set = hMap.entrySet();
+            if(isUpdate)
+                return StringForUpdate(set);
+            return StringForInsert(set);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * Convert Set<Map> to string for update request
+     * @param set
+     * @return String 
+     */
+    private String StringForUpdate(Set<Map.Entry<String, String>> set) {
+        String setStr = ""; 
+        for (Map.Entry<String, String>m: set) {
+            setStr = String.format("%s %s = '%s',",setStr, m.getKey(), m.getValue());
+        }
+        return Tools.RemoveLastChar(setStr, 1);
+    }
+    /**
+     *  Convert Set<Map> to string for insert request
+     * @param set
+     * @return String
+     */
+    private String StringForInsert(Set<Map.Entry<String, String>> set) {
+        String setStr = ""; 
+        for (Map.Entry<String, String>m: set) {
+            setStr = String.format("%s %s = '%s',",setStr, m.getKey(), m.getValue());
+        }
+        return Tools.RemoveLastChar(setStr, 1);
+    }
+    /**
      * Execute the query
      * @param query
      * @return Statement
@@ -139,6 +208,18 @@ public class GenericRepo implements IGenericRepo {
             new BeanListHandler(bean)
             );
         return table;
+    }
+    /**
+     * Update or Insert the query
+     * @param query SQL Query
+     * @return nbr or row impact
+     * @throws SQLException
+     */
+    private int ResultUpdateInsert(String query) throws SQLException {
+        return qRunner.update(
+            connection, 
+            query
+            );
     }
     /**
      * Return the result to a list
